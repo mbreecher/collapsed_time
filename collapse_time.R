@@ -13,26 +13,46 @@ collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
 
 collapsed_history <- merge(services, collapsed_time, "Services.ID", all.x = T)
 
-collapsed_history$billable_time <- NA
-collapsed_history$concurrent_services <- NA
+# #alternatively, use plyr
+pts <- proc.time()
+count.unique <- function(x) { length(unique(x[!is.na(x)])) } #function to count unique non-NA values
 
-ptm <- proc.time()
-uniques <- unique(collapsed_history[, c("Account.Name", "Quarter.End", "filing.estimate")])
-for (i in 1:nrow(uniques)){
-    loop_timelog <- timelog[timelog$Account.Name %in% uniques[i,1] & timelog$Billable %in% c("1") &
-                              timelog$Date >= uniques[i,2] & timelog$Date <= uniques[i,3] & !is.na(timelog$Date), ]
-    if (!is.null(loop_timelog)){
-      collapsed_history[collapsed_history$Account.Name %in% uniques[i,1] & 
-                          collapsed_history$filing.estimate %in% uniques[i,3],]$billable_time <- sum(loop_timelog$Hours)
-      collapsed_history[collapsed_history$Account.Name %in% uniques[i,1] & 
-                          collapsed_history$filing.estimate %in% uniques[i,3],]$concurrent_services <- length(unique(loop_timelog$Services.ID))
-    }
-}
-proc.time() - ptm
+# use ddply to aggregate
+collapsed_timelog <- ddply(collapsed_history,
+                           .var = c("Account.Name", "Quarter.End", "filing.estimate", "Services.ID"),
+                           .fun = function(x) {
+                             
+                             # Grab the appropriate subset of timelog
+                             x_timelog <- subset(timelog, 
+                                                 subset = Account.Name %in% x$Account.Name &
+                                                   Billable %in% 1 &
+                                                   Date >= x$Quarter.End &
+                                                   Date <= x$filing.estimate &
+                                                   !is.na(Date) &
+                                                   !is.na(Hours)
+                             )
+                             
+                             # Aggregate using summarise - basically generates a data.frame with just
+                             # the variables I name on the 2nd and 3rd lines
+                             summarise(x_timelog,
+                                       billable_time = sum(Hours),
+                                       concurrent_services = count.unique(x_timelog$Services.ID)
+                             )
+                            }
+)
+
+
+# Then merging the aggregated results
+collapsed_history_time <- merge(x = collapsed_history,
+                                y = collapsed_timelog,
+                                by = c("Account.Name", "filing.estimate"),
+                                all.x = TRUE
+)
+proc.time() - pts
 
 # code to export 
 setwd('C:/R/workspace/collapsed_time/output')
-export <- collapsed_history
+export <- collapsed_history_time
 export <- data.frame(lapply(export, as.character), stringsAsFactors = F)
 export[is.na(export)] <- ""
 write.csv(export, file = "CollapsedHistoryR.csv", row.names = F, na = "")
