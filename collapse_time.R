@@ -18,10 +18,10 @@ collapsed_history$concurrent_services <- NA
 
 ptm <- proc.time()
 for (account in unique(collapsed_history$Account.Name)){
-  for(deadline in unique(collapsed_history$filing.estimate)){
+  for(deadline in unique(collapsed_history[collapsed_history$Account.Name %in% account,]$filing.estimate)){
     loop_timelog <- timelog[timelog$Account.Name %in% account & timelog$Billable %in% c("1") &
                               timelog$Date >= deadline - 40 & timelog$Date <= deadline & !is.na(timelog$Date), ]
-    if (is.null(loop_timelog)){
+    if (!is.null(loop_timelog)){
       collapsed_history[collapsed_history$Account.Name %in% account & 
                           collapsed_history$filing.estimate %in% deadline,]$billable_time <- sum(loop_timelog$Hours)
       collapsed_history[collapsed_history$Account.Name %in% account & 
