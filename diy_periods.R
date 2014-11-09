@@ -25,12 +25,16 @@ diy_bucketed_timelog <- ddply(timelog,
                              if (length(x_ye)<1){x_ye <- "12/31"}
                              x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
 
-                             qd <- as.numeric((x_ye - unique(x$Date))/90) #quarter difference from year end
-                             #if (qd < 0){p1 <- 1}else{p1 <- 0}
-                             if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
+                             qd <- as.numeric((unique(x$Date)-x_ye)/91)%%4 #quarter difference from year end
+                             #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
                              cq <- ceiling(qd)
                              
-                             data.frame(timelog_quarter = paste("Q",abs(cq), " ",year(unique(x$Date)), sep = ""), year_end = x_ye)
+                             if(cq < 0){
+                               data.frame(timelog_quarter = paste("Q",cq, " ",year(unique(x$Date)), sep = ""), year_end = x_ye)  
+                             }else{
+                               data.frame(timelog_quarter = paste("Q",abs(cq), " ",year(unique(x$Date))+1, sep = ""), year_end = x_ye)
+                             }
+                             
                              #browser()
                            }
 )
