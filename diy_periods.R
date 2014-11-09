@@ -20,23 +20,17 @@ diy_bucketed_timelog <- ddply(timelog,
                            .fun = function(x) {
                              
                              # Grab the year end from the services
-                             x_services <- subset(services, subset = Account.Name %in% x$Account.Name)
+                             x_services <- subset(services, subset = Account.Name %in% x$Account.Name, na.rm = T)
                              x_ye <- unique(x_services$Year.End)
-                             x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"))
-#                              browser()
-                             qd <- as.numeric((x_ye - x$Date)/90) #quarter difference from year end
-                             if (qd < 0){p1 <- TRUE}
+                             if (length(x_ye)<1){x_ye <- "12/31"}
+                             x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
+
+                             qd <- as.numeric((x_ye - unique(x$Date))/90) #quarter difference from year end
+                             #if (qd < 0){p1 <- 1}else{p1 <- 0}
                              if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
-                             if (qd > 0 & qd <= 1){
-                                  cq <- 1
-                                }else if (qd > 1 & qd <= 2){
-                                  cq <- 2
-                                }else if (qd > 2 & qd <= 3){
-                                  cq <- 3
-                                }else{
-                                  cq <- 4
-                             }
+                             cq <- ceiling(qd)
                              
-                             result <- c("Q",cq, " ",year(x$Date))    
+                             data.frame(timelog_quarter = paste("Q",abs(cq), " ",year(unique(x$Date)), sep = ""), year_end = x_ye)
+                             #browser()
                            }
 )
