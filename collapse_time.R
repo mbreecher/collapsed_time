@@ -39,7 +39,8 @@ collapsed_timelog <- ddply(collapsed_history,
                              # the variables I name on the 2nd and 3rd lines
                              summarise(x_timelog,
                                        billable_time = sum(Hours),
-                                       concurrent_services = count.unique(x_timelog$Services.ID)
+                                       concurrent_services = count.unique(x_timelog$Services.ID),
+                                       divided_billable_time = sum(Hours)/count.unique(x_timelog$Services.ID)
                              )
                             }
 )
