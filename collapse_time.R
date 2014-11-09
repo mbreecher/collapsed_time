@@ -19,15 +19,18 @@ count.unique <- function(x) { length(unique(x[!is.na(x)])) } #function to count 
 
 # use ddply to aggregate
 collapsed_timelog <- ddply(collapsed_history,
-                           .var = c("Account.Name", "Quarter.End", "filing.estimate", "Services.ID"),
+                           .var = c("Account.Name", "Quarter.End", "filing.estimate"),
                            .fun = function(x) {
                              
+#                              if (dim(x)[1] > 1){
+#                                browser()  
+#                              }
                              # Grab the appropriate subset of timelog
                              x_timelog <- subset(timelog, 
                                                  subset = Account.Name %in% x$Account.Name &
                                                    Billable %in% 1 &
-                                                   Date >= x$Quarter.End &
-                                                   Date <= x$filing.estimate &
+                                                   Date >= unique(x$Quarter.End) &
+                                                   Date <= unique(x$filing.estimate) &
                                                    !is.na(Date) &
                                                    !is.na(Hours)
                              )
