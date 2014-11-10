@@ -44,7 +44,7 @@ diy_bucketed_timelog <- ddply(timelog,
                                }
                              }else{
                                data.frame(customer_quarter = NA, 
-                                          calendar_quarter = NA,
+                                          calendar_quarter = aq,
                                           year_end = NA,
                                           Hours = sum(x$Hours))
                              }
