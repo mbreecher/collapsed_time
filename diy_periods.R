@@ -13,8 +13,9 @@ collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
 
 collapsed_history <- merge(services, collapsed_time, "Services.ID", all.x = T)
 
-#for each unique account and logged date, use the distance from the year end date to assign a quarter bucket
+timelog <- timelog[!is.na(timelog$Account.Name) & timelog$Billable %in% 1, ]
 
+#for each unique account and logged date, use the distance from the year end date to assign a quarter bucket
 diy_bucketed_timelog <- ddply(timelog,
                            .var = c("Account.Name", "Date"),
                            .fun = function(x) {
