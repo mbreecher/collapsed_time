@@ -23,14 +23,12 @@ diy_bucketed_timelog <- ddply(timelog,
                              # Grab the year end from the services
                              x_services <- subset(services, subset = Account.Name %in% x$Account.Name, na.rm = T)
                              x_ye <- unique(x_services$Year.End)
-                             if (!(is.null(x_ye))){
-                               x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
-  
-                               qd <- as.numeric((unique(x$Date)-x_ye)/91)%%4 #quarter difference from year end
-                               #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
-                               cq <- ceiling(qd)
-                               aq <- paste("Q", ceiling(as.numeric(month(unique(x$Date))/3)), year(unique(x$Date)), sep = "")
-                             }
+                             x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
+
+                             qd <- as.numeric((unique(x$Date)-x_ye)/91)%%4 #quarter difference from year end
+                             #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
+                             cq <- ceiling(qd)
+                             aq <- paste("Q", ceiling(as.numeric(month(unique(x$Date))/3)), year(unique(x$Date)), sep = "")
                              
                              if(!is.na(cq)){
                                if(cq < 0){
@@ -55,8 +53,17 @@ diy_bucketed_timelog <- ddply(timelog,
                            }
 )
 
+#aggregate diy time by account and quarter
 diy_time <- with(diy_bucketed_timelog,
                  aggregate(Hours ~ Account.Name + customer_quarter + calendar_quarter + year_end, FUN = sum))
+#customers with no services will be dropped from the above, so we need to grab them separately and bind the result.
+  diy_time_no_services <- with(diy_bucketed_timelog[is.na(diy_bucketed_timelog$customer_quarter),],
+                   aggregate(Hours ~ Account.Name, FUN = sum))
+  #add some columns and order before bind
+  diy_time_no_services$customer_quarter <- NA; diy_time_no_services$calendar_quarter <- NA; diy_time_no_services$year_end <- NA
+  diy_time_no_services <- diy_time_no_services[,names(diy_time)]
+  diy_time <- rbind(diy_time, diy_time_no_services)
+
 #order by account name then customer quarter
 diy_time <- diy_time[order(diy_time$Account.Name, diy_time$customer_quarter),]
 
