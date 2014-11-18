@@ -3,8 +3,10 @@ library(plyr)
 library(RecordLinkage)
 
 # Pull in import functions
-setwd('C:/R/workspace/collapsed_time')
+setwd("C:/R/workspace/shared")
 source("import_functions.R")
+
+setwd('C:/R/workspace/collapsed_time')
 
 services <- import_services()
 timelog <- import_timelog()
@@ -57,6 +59,7 @@ proc.time() - pts
 # code to export 
 setwd('C:/R/workspace/collapsed_time/output')
 export <- collapsed_history_time
+export$divided_billable_time[is.na(export$divided_billable_time)] <- NA
 export <- data.frame(lapply(export, as.character), stringsAsFactors = F)
 export[is.na(export)] <- ""
 write.csv(export, file = "CollapsedHistoryR.csv", row.names = F, na = "")

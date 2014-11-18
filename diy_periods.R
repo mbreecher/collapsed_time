@@ -3,8 +3,9 @@ library(plyr)
 library(RecordLinkage)
 
 # Pull in import functions
-setwd('C:/R/workspace/collapsed_time')
+setwd('C:/R/workspace/shared')
 source("import_functions.R")
+setwd('C:/R/workspace/collapsed_time')
 
 services <- import_services()
 timelog <- import_timelog()
