@@ -36,7 +36,7 @@ import_billable <- function(){
                                #actual quarter
                                aq <- paste(year(unique(x$Date)),"Q", ceiling(as.numeric(month(unique(x$Date))/3)),  sep = "")
                                #actual reporting quarter
-                               aq <- paste(year(unique(x$Date)-91),"Q", ceiling(as.numeric(month(unique(x$Date)-91)/3)),  sep = "")
+                               arq <- paste(year(unique(x$Date)-91),"Q", ceiling(as.numeric(month(unique(x$Date)-91)/3)),  sep = "")
                                
                                if(!is.na(cq)& !(x_ye %in% c("     ")) & !is.na(x_ye)){
                                  if(unique(x$Date) < x_ye){
@@ -56,7 +56,7 @@ import_billable <- function(){
                                  }
                                }else{
                                  data.frame(customer_quarter_work_done = NA, 
-                                            customer_quarter_reported = NA
+                                            customer_quarter_reported = NA,
                                             calendar_quarter_work_done = aq,
                                             calendar_quarter_reported = arq,
                                             year_end = NA,
@@ -69,17 +69,18 @@ import_billable <- function(){
   
   #aggregate diy time by account and quarter
   diy_time <- with(diy_bucketed_timelog,
-                   aggregate(Hours ~ Account.Name + customer_quarter + calendar_quarter + year_end, FUN = sum))
+                   aggregate(Hours ~ Account.Name + customer_quarter_work_done + customer_quarter_reported + 
+                               calendar_quarter_work_done + calendar_quarter_reported + year_end, FUN = sum))
   #customers with no services will be dropped from the above, so we need to grab them separately and bind the result.
-    diy_time_no_services <- with(diy_bucketed_timelog[is.na(diy_bucketed_timelog$customer_quarter),],
-                     aggregate(Hours ~ Account.Name, FUN = sum))
+    diy_time_no_services <- with(diy_bucketed_timelog[is.na(diy_bucketed_timelog$customer_quarter_reported),],
+                     aggregate(Hours ~ Account.Name + calendar_quarter_work_done + calendar_quarter_reported , FUN = sum))
     #add some columns and order before bind
-    diy_time_no_services$customer_quarter <- NA; diy_time_no_services$calendar_quarter <- NA; diy_time_no_services$year_end <- NA
+    diy_time_no_services$customer_quarter_work_done <- NA; diy_time_no_services$customer_quarter_reported <- NA; diy_time_no_services$year_end <- NA
     diy_time_no_services <- diy_time_no_services[,names(diy_time)]
     diy_time <- rbind(diy_time, diy_time_no_services)
   
   #order by account name then customer quarter
-  diy_time <- diy_time[order(diy_time$Account.Name, diy_time$customer_quarter),]
+  diy_time <- diy_time[order(diy_time$Account.Name, diy_time$customer_quarter_reported),]
   
   # code to export 
   setwd('C:/R/workspace/collapsed_time/output')

@@ -12,10 +12,11 @@ services <- import_services()
 timelog <- import_timelog()
 diy_time <- import_billable() 
 
+timelog <- timelog[timelog$Date <= Sys.Date() & timelog$Date >= as.Date("2012-06-30"),]
+
 collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
 collapsed_history <- merge(services, collapsed_time, "Services.ID", all.x = T)
 
-timelog <- timelog[timelog$Date <= Sys.Date() & timelog$Date >= as.Date("2012-06-30"),]
 collapsed_history <- collapsed_history[collapsed_history$filing.estimate <= Sys.Date() & 
                                          collapsed_history$filing.estimate >= as.Date("2012-06-30"),]
 
@@ -63,7 +64,7 @@ customer_period <- ddply(collapsed_history,
                                   data.frame(customer_quarter_work_done = NA, 
                                              customer_quarter_reported = NA,
                                              calendar_quarter_work_done = aq,
-                                             calendar_quarter_repoted = arq,
+                                             calendar_quarter_reported = arq,
                                              year_end = NA,
                                              Hours = sum(x$Hours))
                                 }
@@ -72,13 +73,15 @@ customer_period <- ddply(collapsed_history,
                               }
 )
 
-diy_time_simple <- diy_time[,c("Account.Name", "customer_quarter", "calendar_quarter", "Hours")]
-names(diy_time_simple) <- c("Account.Name", "customer_quarter", "calendar_quarter", "Billable.Hours")
+start <- c("Account.Name", "calendar_quarter_reported", "calendar_quarter_work_done", "customer_quarter_reported", "customer_quarter_work_done")
+
+diy_time_simple <- diy_time[,c(start, "Hours")]
+names(diy_time_simple) <- c(start, "Billable.Hours")
 # diy_time_simple$calendar_quarter <- paste(substr(diy_time_simple$calendar_quarter,3,6), 
 #                                           substr(diy_time_simple$calendar_quarter,2,2), sep = "")
-export <- merge(customer_period, diy_time_simple, by = c("Account.Name", "customer_quarter_work_done", "calendar_quarter_work_done"), all = T)
 
-start <- c("Account.Name", "calendar_quarter_reported", "calendar_quarter_work_done", "customer_quarter_reported", "customer_quarter_work_done")
+export <- merge(customer_period, diy_time_simple, by = start, all = T)
+
 export <- export[,c(start, names(export)[!(names(export) %in% start)])]
 
 #some cleanup
