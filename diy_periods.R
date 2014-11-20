@@ -34,6 +34,8 @@ import_billable <- function(){
                                #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
                                if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
                                if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
+                               if(cq %in% 0){cq = 4}
+                               if(pcq %in% 0){pcq = 4}
                                #actual quarter
                                aq <- paste(year(unique(x$Date)),"Q", ceiling(as.numeric(month(unique(x$Date))/3)),  sep = "")
                                #actual reporting quarter
