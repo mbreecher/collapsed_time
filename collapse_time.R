@@ -13,10 +13,13 @@ timelog <- import_timelog()
 diy_time <- import_billable() 
 
 collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
-
 collapsed_history <- merge(services, collapsed_time, "Services.ID", all.x = T)
 
-# #alternatively, use plyr
+timelog <- timelog[timelog$Date <= Sys.Date() & timelog$Date >= as.Date("2012-06-30"),]
+collapsed_history <- collapsed_history[collapsed_history$filing.estimate <= Sys.Date() & 
+                                         collapsed_history$filing.estimate >= as.Date("2012-06-30"),]
+
+
 pts <- proc.time()
 count.unique <- function(x) { length(unique(x[!is.na(x)])) } #function to count unique non-NA values
 
@@ -30,26 +33,37 @@ customer_period <- ddply(collapsed_history,
                                 x_ye <- as.Date(paste(year(unique(x$filing.estimate)),x_ye, sep = "/"), format = "%Y/%m/%d")
                                 
                                 qd <- as.numeric((unique(x$filing.estimate)-x_ye)/91)%%4 #quarter difference from year end
+                                pqd <- as.numeric((unique(x$filing.estimate)-x_ye - 91)/91)%%4 #quarter difference from year end (prior quarter)
                                 #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
                                 if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
+                                if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
                                 
-                                aq <- paste("Q", ceiling(as.numeric(month(unique(x$filing.estimate))/3)), year(unique(x$filing.estimate)), sep = "")
+                                #actual quarter
+                                aq <- paste(year(unique(x$filing.estimate)),"Q", ceiling(as.numeric(month(unique(x$filing.estimate))/3)),  sep = "")
+                                #actual reporting quarter
+                                arq <- paste(year(unique(x$filing.estimate)-91),"Q", ceiling(as.numeric(month(unique(x$filing.estimate)-91)/3)),  sep = "")
                                 
                                 if(!is.na(cq) & !(x_ye %in% c("     ")) & !is.na(x_ye)){
                                   if(unique(x$filing.estimate) < x_ye){
-                                    data.frame(customer_quarter = paste("Q",cq, " ",year(unique(x$filing.estimate)), sep = ""), 
-                                               calendar_quarter = aq,
+                                    data.frame(customer_quarter_work_done = paste(year(unique(x$filing.estimate)),"Q",cq, sep = ""), 
+                                               customer_quarter_reported = paste(year(unique(x$filing.estimate) - 91),"Q",pcq, sep = ""), 
+                                               calendar_quarter_work_done = aq,
+                                               calendar_quarter_reported = arq,
                                                year_end = x_ye,
                                                Hours = sum(x$Hours))  
                                   }else{
-                                    data.frame(customer_quarter = paste("Q",abs(cq), " ",year(unique(x$filing.estimate))+1, sep = ""), 
-                                               calendar_quarter = aq,
+                                    data.frame(customer_quarter_work_done = paste(year(unique(x$filing.estimate))+1,"Q",abs(cq), sep = ""), 
+                                               customer_quarter_reported = paste(year(unique(x$filing.estimate)-91)+1,"Q",abs(pcq), sep = ""), 
+                                               calendar_quarter_work_done = aq,
+                                               calendar_quarter_reported = arq,
                                                year_end = x_ye,
                                                Hours = sum(x$Hours))
                                   }
                                 }else{
-                                  data.frame(customer_quarter = NA, 
-                                             calendar_quarter = aq,
+                                  data.frame(customer_quarter_work_done = NA, 
+                                             customer_quarter_reported = NA,
+                                             calendar_quarter_work_done = aq,
+                                             calendar_quarter_repoted = arq,
                                              year_end = NA,
                                              Hours = sum(x$Hours))
                                 }
@@ -62,11 +76,13 @@ diy_time_simple <- diy_time[,c("Account.Name", "customer_quarter", "calendar_qua
 names(diy_time_simple) <- c("Account.Name", "customer_quarter", "calendar_quarter", "Billable.Hours")
 # diy_time_simple$calendar_quarter <- paste(substr(diy_time_simple$calendar_quarter,3,6), 
 #                                           substr(diy_time_simple$calendar_quarter,2,2), sep = "")
-export <- merge(customer_period, diy_time_simple, by = c("Account.Name", "customer_quarter", "calendar_quarter"), all = T)
+export <- merge(customer_period, diy_time_simple, by = c("Account.Name", "customer_quarter_work_done", "calendar_quarter_work_done"), all = T)
+
+start <- c("Account.Name", "calendar_quarter_reported", "calendar_quarter_work_done", "customer_quarter_reported", "customer_quarter_work_done")
+export <- export[,c(start, names(export)[!(names(export) %in% start)])]
 
 #some cleanup
 names(export[c("Hours")]) <- c("Project.Hours")
-export[is.na(export$Service.Name),]$customer_quarter <- NA
 
 # code to export 
 setwd('C:/R/workspace/collapsed_time/output')

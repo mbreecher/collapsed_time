@@ -29,25 +29,36 @@ import_billable <- function(){
                                x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
   
                                qd <- as.numeric((unique(x$Date)-x_ye)/91)%%4 #quarter difference from year end
+                               pqd <- as.numeric((unique(x$Date)-x_ye - 91)/91)%%4 #quarter difference from year end (prior quarter)
                                #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
                                if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
-                               aq <- paste("Q", ceiling(as.numeric(month(unique(x$Date))/3)), year(unique(x$Date)), sep = "")
+                               if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
+                               #actual quarter
+                               aq <- paste(year(unique(x$Date)),"Q", ceiling(as.numeric(month(unique(x$Date))/3)),  sep = "")
+                               #actual reporting quarter
+                               aq <- paste(year(unique(x$Date)-91),"Q", ceiling(as.numeric(month(unique(x$Date)-91)/3)),  sep = "")
                                
                                if(!is.na(cq)& !(x_ye %in% c("     ")) & !is.na(x_ye)){
                                  if(unique(x$Date) < x_ye){
-                                   data.frame(customer_quarter = paste("Q",cq, " ",year(unique(x$Date)), sep = ""), 
-                                              calendar_quarter = aq,
+                                   data.frame(customer_quarter_work_done = paste(year(unique(x$Date)),"Q",cq, sep = ""), 
+                                              customer_quarter_reported = paste(year(unique(x$Date)-91),"Q",pcq, sep = ""), 
+                                              calendar_quarter_work_done = aq,
+                                              calendar_quarter_reported = arq,
                                               year_end = x_ye,
                                               Hours = sum(x$Hours))  
                                  }else{
-                                   data.frame(customer_quarter = paste("Q",abs(cq), " ",year(unique(x$Date))+1, sep = ""), 
-                                              calendar_quarter = aq,
+                                   data.frame(customer_quarter_work_done = paste(year(unique(x$Date))+1, "Q",abs(cq),sep = ""), 
+                                              customer_quarter_reported = paste(year(unique(x$Date)-91)+1, "Q",abs(pcq),sep = ""), 
+                                              calendar_quarter_work_done = aq,
+                                              calendar_quarter_reported = arq,
                                               year_end = x_ye,
                                               Hours = sum(x$Hours))
                                  }
                                }else{
-                                 data.frame(customer_quarter = NA, 
-                                            calendar_quarter = aq,
+                                 data.frame(customer_quarter_work_done = NA, 
+                                            customer_quarter_reported = NA
+                                            calendar_quarter_work_done = aq,
+                                            calendar_quarter_reported = arq,
                                             year_end = NA,
                                             Hours = sum(x$Hours))
                                }
