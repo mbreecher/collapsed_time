@@ -17,6 +17,7 @@ import_billable <- function(){
   collapsed_history <- merge(services, collapsed_time, "Services.ID", all.x = T)
   
   timelog <- timelog[!is.na(timelog$Account.Name) & timelog$Billable %in% 1, ]
+  timelog <- timelog[timelog$Date > as.Date("2012-06-30"),]
   
   #for each unique account and logged date, use the distance from the year end date to assign a quarter bucket
   diy_bucketed_timelog <- ddply(timelog,
@@ -28,27 +29,27 @@ import_billable <- function(){
                                x_ye <- unique(x_services$Year.End)
                                x_ye <- as.Date(paste(year(unique(x$Date)),x_ye, sep = "/"), format = "%Y/%m/%d")
   
-                               qd <- as.numeric((unique(x$Date)-x_ye)/91)%%4 #quarter difference from year end
-                               pqd <- as.numeric((unique(x$Date)-x_ye - 91)/91)%%4 #quarter difference from year end (prior quarter)
+                               qd <- as.numeric((unique(x$Date)-x_ye)/90)%%4 #quarter difference from year end
+                               pqd <- as.numeric((unique(x$Date)-x_ye - 90)/90)%%4 #quarter difference from year end (prior quarter)
                                #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
                                if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
                                if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
                                #actual quarter
                                aq <- paste(year(unique(x$Date)),"Q", ceiling(as.numeric(month(unique(x$Date))/3)),  sep = "")
                                #actual reporting quarter
-                               arq <- paste(year(unique(x$Date)-91),"Q", ceiling(as.numeric(month(unique(x$Date)-91)/3)),  sep = "")
+                               arq <- paste(year(unique(x$Date)-90),"Q", ceiling(as.numeric(month(unique(x$Date)-90)/3)),  sep = "")
                                
                                if(!is.na(cq)& !(x_ye %in% c("     ")) & !is.na(x_ye)){
                                  if(unique(x$Date) < x_ye){
                                    data.frame(customer_quarter_work_done = paste(year(unique(x$Date)),"Q",cq, sep = ""), 
-                                              customer_quarter_reported = paste(year(unique(x$Date)-91),"Q",pcq, sep = ""), 
+                                              customer_quarter_reported = paste(year(unique(x$Date)-90),"Q",pcq, sep = ""), 
                                               calendar_quarter_work_done = aq,
                                               calendar_quarter_reported = arq,
                                               year_end = x_ye,
                                               Hours = sum(x$Hours))  
                                  }else{
                                    data.frame(customer_quarter_work_done = paste(year(unique(x$Date))+1, "Q",abs(cq),sep = ""), 
-                                              customer_quarter_reported = paste(year(unique(x$Date)-91)+1, "Q",abs(pcq),sep = ""), 
+                                              customer_quarter_reported = paste(year(unique(x$Date)-90)+1, "Q",abs(pcq),sep = ""), 
                                               calendar_quarter_work_done = aq,
                                               calendar_quarter_reported = arq,
                                               year_end = x_ye,
