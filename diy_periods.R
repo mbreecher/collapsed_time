@@ -9,7 +9,7 @@ import_billable <- function(){
   source("import_functions.R")
   setwd('C:/R/workspace/collapsed_time')
   
-  services <- import_services()
+  services <- import_services(name = "services_for_ps_history_with_status_none.csv")
   timelog <- import_timelog()
   
   collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
@@ -32,8 +32,8 @@ import_billable <- function(){
                                qd <- as.numeric((unique(x$Date)-x_ye)/90)%%4 #quarter difference from year end
                                pqd <- as.numeric((unique(x$Date)-x_ye - 90)/90)%%4 #quarter difference from year end (prior quarter)
                                #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
-                               if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
-                               if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
+                               if(!is.na(qd)){if(qd >= 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}else{cq <- NA}
+                               if(!is.na(pqd)){if(pqd >= 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}else{pcq <- NA}
                                if(cq %in% 0){cq = 4}
                                if(pcq %in% 0){pcq = 4}
                                #actual quarter
