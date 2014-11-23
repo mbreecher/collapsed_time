@@ -97,6 +97,7 @@ export <- merge(export, normalized_time, by = start, all.x = T )
 names(export)[names(export) %in% c("normalized_time....normalized_time")] <- "normalized_time"
 #some cleanup
 names(export[c("Hours")]) <- c("Project.Hours")
+export <- unique(export)
 
 # code to export 
 setwd('C:/R/workspace/collapsed_time/output')
