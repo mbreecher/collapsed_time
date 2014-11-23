@@ -36,8 +36,8 @@ customer_period <- ddply(collapsed_history,
                               qd <- as.numeric((unique(x$filing.estimate)-x_ye)/90)%%4 #quarter difference from year end
                               pqd <- as.numeric((unique(x$filing.estimate)-x_ye - 90)/90)%%4 #quarter difference from year end (prior quarter)
                               #if(abs(qd > 4)){qd <- qd%%4} #get a mod 4 quarter difference
-                              if(!is.na(qd)){if(qd > 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}
-                              if(!is.na(pqd)){if(pqd > 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}
+                              if(!is.na(qd)){if(qd > 0){cq <- ceiling(qd)}else{cq <- floor(qd)}}else{cq <- NA}
+                              if(!is.na(pqd)){if(pqd > 0){pcq <- ceiling(pqd)}else{pcq <- floor(pqd)}}else{pcq <- NA}
                               if(cq %in% 0){cq = 4}
                               if(pcq %in% 0){pcq = 4}
                               
