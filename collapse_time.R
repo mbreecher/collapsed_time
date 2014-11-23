@@ -81,9 +81,20 @@ diy_time_simple <- diy_time[,c(start, "Hours")]
 names(diy_time_simple) <- c(start, "Billable.Hours")
 
 export <- merge(customer_period, diy_time_simple, by = start, all = T)
-
 export <- export[,c(start, names(export)[!(names(export) %in% start)])]
 
+#merge duplicated billable hour counts for customers with more then one concurrent service in a period. Need to correct.
+export$Billable.Hours <- as.numeric(export$Billable.Hours)
+normalized_time <- ddply(export, .var = start,
+                         .fun = function(x){
+                           count <- length(unique(x$Services.ID))
+                           if(count > 1 & !is.na(count)){normalized_time <- x$Billable.Hours/count}else{normalized_time <- x$Billable.Hours}
+                           data.frame(services_count = count,
+                                      normalized_time <- normalized_time)
+                         })
+
+export <- merge(export, normalized_time, by = start, all.x = T )
+names(export)[names(export) %in% c("normalized_time....normalized_time")] <- "normalized_time"
 #some cleanup
 names(export[c("Hours")]) <- c("Project.Hours")
 
