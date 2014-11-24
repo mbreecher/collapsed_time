@@ -104,3 +104,15 @@ setwd('C:/R/workspace/collapsed_time/output')
 export <- data.frame(lapply(export, as.character), stringsAsFactors = F)
 export[is.na(export)] <- ""
 write.csv(export, file = "CollapsedHistoryR.csv", row.names = F, na = "")
+
+
+#explore orphaned time
+# orphans <- timelog[!(timelog$Services.ID %in% export$Services.ID ),]
+# orphans_simple <- aggregate(Hours ~ Services.ID, data = orphans, FUN = sum)
+# setwd('C:/R/workspace/source')
+# complete_services <- read.csv("unfiltered_services.csv", header = T , stringsAsFactors=F)
+# merge_orphans <- merge(orphans_simple, complete_services, "Services.ID", all.x = T)
+# 
+# setwd('C:/R/workspace/collapsed_time/output')
+# merge_orphans[is.na(merge_orphans)] <- ""
+# write.csv(merge_orphans, file = "merged_orphans.csv", row.names = F, na = "")
