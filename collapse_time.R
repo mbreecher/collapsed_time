@@ -10,7 +10,7 @@ collapsed_time <- function(){
   source("diy_periods.R")
   
   #import services and include customer status = none
-  services <- import_services(name = "services_for_ps_history_with_status_none.csv")
+  services <- import_services(name = "completed_services_for_ps_history_with_status_none.csv")
   timelog <- import_timelog()
   diy_time <- import_billable() 
   
