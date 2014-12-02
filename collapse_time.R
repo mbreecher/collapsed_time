@@ -29,7 +29,7 @@ collapsed_time <- function(){
   
   #I need customer period to merge diy time
   customer_period <- ddply(collapsed_history,
-                              .var = c("Services.ID", "CIK", "Status", "Account.Name", "filing.estimate", "Service.Name", "Service.Type", "Form.Type", "Quarter.End"),
+                              .var = c("Services.ID", "CIK", "Account.Name", "filing.estimate", "Service.Name", "Service.Type", "Form.Type", "Quarter.End"),
                               .fun = function(x) {
                                 
                                 # Grab the year end from the services
