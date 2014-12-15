@@ -9,7 +9,7 @@ import_billable <- function(){
   source("import_functions.R")
   setwd('C:/R/workspace/collapsed_time')
   
-  services <- import_services(name = "services_for_ps_history_with_status_none.csv")
+  services <- import_services()
   timelog <- import_timelog()
   
   collapsed_time <- aggregate(Hours ~ Services.ID, FUN = sum, data = timelog)
