@@ -103,9 +103,9 @@ collapsed_time <- function(){
   export <- unique(export)
   
   # code to export 
-  setwd('C:/R/workspace/collapsed_time/output')
-  export <- data.frame(lapply(export, as.character), stringsAsFactors = F)
-  export[is.na(export)] <- ""
+  #setwd('C:/R/workspace/collapsed_time/output')
+  # export <- data.frame(lapply(export, as.character), stringsAsFactors = F)
+  #export[is.na(export)] <- ""
   # write.csv(export, file = "CollapsedHistoryR.csv", row.names = F, na = "")
   export
 }
